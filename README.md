@@ -1,101 +1,75 @@
-# Name of App *(Give your app a short and informative title. Please adhere to our convention of Title Case without hyphens (e.g. My New App))*
+# Speed Between Locations
 
 MoveApps
 
-Github repository: *github.com/yourAccount/Name-of-App* *(provide the link to the repository where the code of the App can be found)*
-
-*(Note: all text in italics are instructions for filling out this template. Please replace or delete them before publishing your App.)*
-
-*(Optional, but very helpful for Users: add here a screenshot or example figure of a typical result of the App, e.g. a plot, a map or a table. Save the image in the repository (e.g. in a folder `documentation/`) and include it with:*
-<p align="center">
-  <img alt="Screenshot of the Apps UI" src="documentation/screenshot_UI.png" width="600">
-</p>
-*)*
+Github repository: https://github.com/movestore/Speed_BetweenLocations
 
 ## Description
-*Enter here the short description of the App that might also be used when filling out the description during App submission to MoveApps. This text is directly presented to Users that look through the list of Apps when compiling Workflows.*
+Calculation of the speed between consecutive locations, with histograms, boxplots and a summary table per track to quickly compare tracks and identify those with suspiciously high speeds.
 
 ## Documentation
-*Enter here a detailed description of your App. What is it intended to be used for. Which steps of analyses are performed and how. Please be explicit about any detail that is important for use and understanding of the App and its outcomes. You might also refer to the sections below.*
+This App calculates the speed between each pair of consecutive locations of every track. Speed is a property of a segment, so it is assigned to the first location of each segment. The last location of each track therefore gets the speed NA. The speed is added to the data in the column `speed` and returned for use in later Apps.
+
+To help find tracks with unusual speeds, for example suspiciously high values seen in the histogram of all individuals, the App produces:
+
+- a PDF with:
+  - a histogram of all individuals;
+  - boxplots of speed per track, sorted by maximum speed;
+  - overview pages with the histograms of up to 16 tracks per page;
+  - one histogram per track;
+- a CSV table with summary statistics of speed per track, sorted by maximum speed.
+
+By default all track histograms use the same x-axis range as the full data set, so they can be compared directly. Optionally, a speed threshold can be set. The number and percentage of speeds above it are then reported per track, and it is marked in all plots.
 
 ### Application scope
 #### Generality of App usability
-*State here if the App was developed for a specific species, taxon or taxonomic group, or to answer a specific question. How might it influence the scope and utility of the App. This information will help the user to understand why the App might be producing no or odd results.*
-
-*Examples:*
-
-This App was developed for any taxonomic group. 
-
-This App was developed using data of birds. 
-
-This App was developed using data of red deer. 
-
-This App was developed to identify kill sites, but can probably be used to identify any kind of location clusters like nests, dens or drinking holes.
+This App was developed for any taxonomic group.
 
 #### Required data properties
-*State here the required and/or optimal data properties for this App to perform properly.*
-
-*Examples:*
-
-This App is only applicable to data that reflect range resident behavior. 
-
-The data should have a fix rate of at least 1 location per 30 minutes. 
-
-The App should work for any kind of (location) data.
+The App should work for any kind of location data. Tracks need at least two locations to calculate a speed. Tracks with only one location are listed in the summary table but are not included in the plots.
 
 ### Input type
-*Indicate which type of input data the App requires.*
-
-*Example:* `move2::move2_loc`
+`move2::move2_loc`
 
 ### Output type
-*Indicate which type of output data the App produces to be passed on to subsequent Apps.*
-
-*Example:* `move2::move2_loc`
+`move2::move2_loc`
 
 ### Artefacts
-*If the App creates artefacts (e.g. csv, pdf, jpeg, shapefiles, etc), please list them here and describe each.*
+`speed_histogram.pdf`: PDF with the following pages:
+1. Histogram of the speeds of all individuals (only if there is more than one track).
+2. Boxplots of speed per track, sorted by maximum speed (highest at the top), with up to 40 tracks per page. Tracks with suspiciously high values appear at the top.
+3. Overview pages with the speed histograms of up to 16 tracks per page (only if there is more than one track).
+4. One page with the speed histogram of each track.
 
-*Example:* `rest_overview.csv`: csv-file with Table of all rest site properties
+If a speed threshold is set, it is shown as a red dashed line in all plots. In the histograms, every speed above the threshold is also marked with a red tick along the x-axis, because single values are often not visible as histogram bars. This PDF is not created if no speed can be calculated, i.e. if all tracks have only one location.
 
-### Settings 
-*Please list and define all settings/parameters that the App requires to be set by the App user, if necessary including their unit. Please first state the Setting name the user encounters in the Settings menu defined in the `appspec.json`, and between brackets the argument name used in the code of the R function, to be able to identify it quickly in the code if needed. Please also state the default value, if there is one.*
+`speed_summary_by_track.csv`: table with one row per track, sorted by maximum speed (highest first). Columns:
+- the track ID;
+- `n_locations` and `n_speed_values`;
+- `min_speed`, `q25_speed`, `median_speed`, `mean_speed`, `q75_speed`, `q95_speed` and `max_speed`;
+- `unit`.
 
-*Example:* `Radius of resting site` (radius): Defined radius the animal has to stay in for a given duration of time for it to be considered resting site. Unit: `metres`. Default: `1000`.
+If a speed threshold is set, the columns `n_above_threshold` and `pct_above_threshold` (number and percentage of speed values above the threshold) are added. Tracks with only one location are included with `n_speed_values` = 0 and empty statistics.
+
+### Settings
+`Units` (units): unit in which the speed is calculated and plotted. Available are `m/s` and `km/h`. Default: `m/s`.
+
+`Same x-axis range for all tracks` (fixed_x_axis): if selected, all track histograms (overview pages and individual pages) use the speed range of the full data set and the same bins, so tracks can be compared directly with each other and with the histogram of all individuals. If not selected, each track histogram uses its own speed range. The boxplots always use the range of the full data set. Default: selected (`true`).
+
+`Speed threshold (optional)` (speed_threshold): optional speed in the selected unit. For each track, the number and percentage of speeds above this value are added to the summary table, and the threshold is marked in all plots. The log also states how many tracks have speeds above the threshold. Default: empty (no threshold).
 
 ### Changes in output data
-*Specify here how and if the App modifies the input data. Describe clearly what e.g. each additional column means.*
-
-*Examples:*
-
-The App adds to the input data the columns `Max_dist` and `Avg_dist`. They contain the maximum distance to the provided focal location and the average distance to it over all locations. 
-
-The App filters the input data as selected by the user. 
-
-The output data is the outcome of the model applied to the input data. 
-
-The input data remains unchanged.
+The App adds the column `speed` to the input data. It contains the speed between each location and the next location of the same track, in the selected unit, and stores that unit with the values. The last location of each track has the speed NA. If the input data already contain a column `speed`, it is overwritten and a warning is written to the log. No locations are removed.
 
 ### Errors and null handling
-*Please describe here the most common errors of the App: how they occur and the best ways of solving them. You can also indicate for settings, as well as for the input data, which behaviour the App is supposed to show in case of errors or NULL values/input, including possible errors that can happen if settings/parameters are improperly set. Add here also any other important information that you find the User should be aware of.*
+**Setting `speed_threshold`:** if left empty, no threshold is used. If a negative value is given, it is ignored with a warning and no threshold is used.
 
-*Examples:*
+**Input data:** tracks with only one location get the speed NA. They are listed in the summary table, are excluded from the plots, and their number is stated in the log. If no track has more than one location, no PDF is created and a warning is written to the log. The summary table is still created and the full input data, with the `speed` column added, is returned.
 
-**Setting `radius`:** If no radius AND no duration are given, the input data set is returned with a warning. If no radius is given (NULL), but a duration is defined then a default radius of 1000m = 1km is set. 
-
-**Input data:** If the input data contain fewer than 3 locations per track, the App stops with an error message stating which tracks are affected.
-
-**Common error:** If the App is used on data with a very low fix rate, no resting sites are found and the App returns an empty data set. Adapt the settings `radius` and `duration` to the resolution of your data.
+**Data:** the full input data set with the added `speed` column is returned for use in the next App.
 
 ### Technical details
-*Optional, but recommended. Summarize here how the App works "under the hood", so that Users and developers can get a quick idea of the methods, dependencies and assumptions without having to read the code. Keep it short (a few sentences or bullet points) and mention only what is not already obvious from the sections above.*
-
-*Suggested points to cover:*
-
-- *The main library/package(s) the core calculation relies on, ideally naming the central function(s) (e.g. `move2`, `sf`, `amt`, `ctmm`, `lme4`).*
-- *The method or algorithm applied, and the reference/publication it is based on, if any.*
-- *Assumptions made in the code (e.g. the locations are assumed to be independent).*
-- *The level at which the data are processed (e.g. per track/individual, per track and year, on the whole data set at once).*
-- *Anything relevant for performance (e.g. runtime or memory increases strongly with the number of locations, parallelization).*
-- *Known simplifications or limitations of the implementation.*
-
+- Speed is calculated with `move2::mt_speed()`. It divides the distance between consecutive locations by the time between them, per track. Distances are calculated by `sf` in the projection of the input data, as great-circle distances for longitude/latitude data. The data are not reprojected.
+- Plots are made with `ggplot2`. The summary statistics are calculated per track on the non-NA speed values.
+- The numbers of tracks per page (40 for boxplots, 16 for the overview histograms) are fixed in the code.
+- Very large numbers of tracks lead to many PDF pages, because each track also gets its own histogram page.
