@@ -1,21 +1,38 @@
 {
-  "settings":[{
-  "id": "units",
-  "name": "Units",
-  "description": "Choose the units the speed should be returned in. Default is ’m/s’.",
-  "type": "DROPDOWN",
-  "defaultValue": "m/s",
-  "options": [
+  "version": "1.2",
+  "settings": [
     {
-      "value": "m/s",
-      "displayText": "m/s"
+      "id": "units",
+      "name": "Units",
+      "description": "Choose the unit in which the speed is calculated and plotted.",
+      "defaultValue": "m/s",
+      "type": "DROPDOWN",
+      "options": [
+        {
+          "value": "m/s",
+          "displayText": "m/s"
+        },
+        {
+          "value": "km/h",
+          "displayText": "km/h"
+        }
+      ]
     },
     {
-      "value": "km/h",
-      "displayText": "km/h"
-    }]
-  }
-],
+      "id": "fixed_x_axis",
+      "name": "Same x-axis range for all tracks",
+      "description": "If selected, all track histograms use the speed range of the full data set, so tracks can be compared directly with each other and with the 'All Individuals' histogram. If not selected, each track histogram uses its own speed range.",
+      "defaultValue": true,
+      "type": "CHECKBOX"
+    },
+    {
+      "id": "speed_threshold",
+      "name": "Speed threshold (optional)",
+      "description": "Optional speed, in the selected unit. For each track, the number and percentage of speeds above this value are added to the summary table, and the threshold is marked in all plots. Leave empty to use no threshold.",
+      "defaultValue": null,
+      "type": "DOUBLE"
+    }
+  ],
   "dependencies": {
     "R": [
       {
@@ -32,14 +49,17 @@
       }
     ]
   },
-  "createsArtifacts": true,
   "license": {
-    "key": "GPL-3.0-or-later"
+    "key": "MIT"
   },
   "language": "eng",
   "keywords": [
     "speed",
-    "velocity"
+    "velocity",
+    "histogram",
+    "outliers",
+    "data quality",
+    "movement"
   ],
   "people": [
     {
@@ -51,9 +71,16 @@
       "orcid": "0000-0002-3357-8533",
       "affiliation": "Max-Planck-Institute of Animal Behavior",
       "affiliationRor": "https://ror.org/026stee22"
+    },
+    {
+      "firstName": "Nafiseh",
+      "middleInitials": null,
+      "lastName": "Tavakol",
+      "email": "ntavakol@ab.mpg.de",
+      "roles": ["contributor"],
+      "orcid": "0000-0003-3674-4784",
+      "affiliation": "Max-Planck-Institute of Animal Behavior",
+      "affiliationRor": "https://ror.org/026stee22"
     }
-  ],
-  "documentation" : {
-    "url": "https://github.com/movestore/Speed_BetweenLocations/blob/master/README.md"
-  }
+  ]
 }
