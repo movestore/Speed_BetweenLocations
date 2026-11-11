@@ -1,5 +1,5 @@
 {
     "units": "m/s",
     "fixed_x_axis": true,
-    "speed_threshold": null
+    "speed_threshold": 6
 }
