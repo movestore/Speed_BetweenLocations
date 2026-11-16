@@ -4,7 +4,7 @@
     {
       "id": "units",
       "name": "Units",
-      "description": "Choose the unit in which the speed is calculated and plotted.",
+      "description": "Choose the unit of the speed in the plots and the summary table. This setting does not affect the column 'speed' added to the output data, which is always in m/s.",
       "defaultValue": "m/s",
       "type": "DROPDOWN",
       "options": [
