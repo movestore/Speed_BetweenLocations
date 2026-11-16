@@ -10,11 +10,9 @@ Calculation of the speed between consecutive locations, with histograms, boxplot
 ## Documentation
 This App calculates the speed between each pair of consecutive locations of every track. Speed is a property of a segment, so it is assigned to the first location of each segment. The last location of each track therefore gets the speed NA. The speed is added to the data in the column `speed` and returned for use in later Apps.
 
-To help find tracks with unusual speeds, for example suspiciously high values seen in the histogram of all individuals, the App produces:
+To help find tracks with unusual speeds, for example suspiciously high values seen in the histogram of all individuals, the App produces an overview PDF to facilitate comparison between tracks, a PDF with single histograms per track and a CSV table with summary statistics. For more details see the section *Artifacts*.
 
-- an overview PDF with a histogram of all individuals and boxplots of speed per track, sorted by maximum speed;
-- a second PDF with one histogram per track;
-- a CSV table with summary statistics of speed per track, sorted by maximum speed.
+If you find unrealistic high speeds that make it difficult to see the distribution of speeds, use an App to remove outliers, e.g. the `Remove Outlier` App to exclude speeds above a certain value, and then add again this App (Speed between locations) and the plots should look much better.
 
 By default all track histograms use the same x-axis range as the full data set, so they can be compared directly. Optionally, a speed threshold can be set. The number and percentage of speeds above it are then reported per track, and it is marked in all plots.
 
