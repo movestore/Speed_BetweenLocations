@@ -1,8 +1,11 @@
-library('move2')
+test_data <- test_data("input3_move2loc_LatLon.rds")
 
-test_data <- test_data("input3_move2.rds") #file must be move2!
+test_that("happy path", {
+  actual <- rFunction(data = test_data, sdk = "unit test", year = 1998)
+  expect_equal(unique(lubridate::year(mt_time(actual))), 1998)
+})
 
-test_that("equal units", {
-  actual <- rFunction(data = test_data, units="km/h")
-  expect_equal(paste0(units(actual$speed)$numerator,"/",units(actual$speed)$denominator), "km/h")
+test_that("year not included", {
+  actual <- rFunction(data = test_data, sdk = "unit test", year = 1900)
+  expect_null(actual)
 })
