@@ -5,14 +5,17 @@ library("units")
 
 ## The parameter "data" is reserved for the data object passed on from the previous App.
 ## Settings (defaults are defined in appspec.json / app-configuration.json):
-##   units           - unit in which speed is calculated ("m/s" or "km/h")
+##   units           - unit of the speed in the summary table and plots ("m/s" or "km/h").
+##                     The `speed` column added to the data is always in m/s.
 ##   fixed_x_axis    - TRUE: all per-track histograms use the x-axis range of the full data set
 ##   speed_threshold - optional speed (in `units`); speeds above it are counted per track and
 ##                     marked in the plots. NULL = no threshold.
 
+
+#### Helpers ############
+
 # number of tracks per page in the multi-track overview pages
 TRACKS_PER_BOXPLOT_PAGE <- 40
-TRACKS_PER_GRID_PAGE <- 16
 
 # summary statistics of the speed values of one track
 summarise_track <- function(speed, threshold) {
@@ -59,9 +62,11 @@ hist_layer <- function(x_fixed) {
   }
 }
 
+
+###### main function ##################
 rFunction <- function(data, units, fixed_x_axis, speed_threshold, ...) {
   
-  if (!is.null(speed_threshold) && (is.na(speed_threshold) || speed_threshold < 0)) {
+  if (!is.null(speed_threshold) && (is.na(speed_threshold) || speed_threshold <= 0)) {
     logger.warn("The speed threshold must be a positive number. No threshold is used.")
     speed_threshold <- NULL
   }
@@ -69,14 +74,17 @@ rFunction <- function(data, units, fixed_x_axis, speed_threshold, ...) {
   if ("speed" %in% names(data)) {
     logger.warn("The input data already contain a column 'speed'. It is overwritten with the newly calculated speed.")
   }
-  data$speed <- mt_speed(data, units = units)
-  
+  # the speed column added to the data is always in m/s; the selected unit is only used
+  # for the summary table and the plots
+  speed_ms <- mt_speed(data, units = "m/s")
+  data$speed <- speed_ms
+
   speed_label <- paste0("Speed (", units, ")")
   track_col <- mt_track_id_column(data)
   track_id <- mt_track_id(data)
   track_levels <- if (is.factor(track_id)) levels(droplevels(track_id)) else unique(as.character(track_id))
   track_id <- factor(as.character(track_id), levels = track_levels)
-  speed_num <- as.numeric(data$speed)
+  speed_num <- as.numeric(set_units(speed_ms, units, mode = "standard"))
   
   ## ---- summary table by track (all tracks, also those without speed values) ----
   speed_by_track <- split(speed_num, track_id)
@@ -104,7 +112,7 @@ rFunction <- function(data, units, fixed_x_axis, speed_threshold, ...) {
   dataPlot$track <- droplevels(dataPlot$track)
   
   if (nrow(dataPlot) == 0) {
-    logger.warn("No speed values could be calculated (all tracks have only one location). No histogram PDF is created.")
+    logger.warn("No speed values could be calculated (all tracks have only one location). No PDFs are created.")
     return(data)
   }
   
@@ -118,8 +126,9 @@ rFunction <- function(data, units, fixed_x_axis, speed_threshold, ...) {
   max_by_track <- tapply(dataPlot$speed, dataPlot$track, max)
   tracks_by_max <- names(sort(max_by_track, decreasing = TRUE))
   
-  pdf(appArtifactPath("speed_histogram.pdf"), width = 10, height = 8)
-  
+  ## overview PDF: histogram of all individuals and boxplots by track
+  pdf(appArtifactPath("speed_histogram_overview.pdf"), width = 10, height = 8)
+
   # 1. all individuals
   if (n_tracks > 1) {
     p <- ggplot(dataPlot, aes(speed)) + geom_histogram(bins = 100) +
@@ -141,23 +150,11 @@ rFunction <- function(data, units, fixed_x_axis, speed_threshold, ...) {
     print(add_threshold(p, speed_threshold))
   }
   
-  if (n_tracks > 1) {
-    # 3. overview grid: several track histograms per page
-    grid_pages <- split(tracks, ceiling(seq_along(tracks) / TRACKS_PER_GRID_PAGE))
-    for (i in seq_along(grid_pages)) {
-      d <- dataPlot[dataPlot$track %in% grid_pages[[i]], ]
-      d$track <- droplevels(d$track)
-      p <- ggplot(d, aes(speed)) + hist_layer(x_fixed) +
-        facet_wrap(~track, ncol = 4, scales = if (is.null(x_fixed)) "free" else "free_y") +
-        x_coord + xlab(speed_label) +
-        ggtitle("Speed histograms by track",
-                subtitle = if (length(grid_pages) > 1) paste("Page", i, "of", length(grid_pages)) else NULL) +
-        theme_bw()
-      print(add_threshold(p, speed_threshold, d))
-    }
-  }
-  
-  # 4. one page per track
+  dev.off()
+
+  ## tracks PDF: one histogram page per track
+  pdf(appArtifactPath("speed_histogram_tracks.pdf"), width = 10, height = 8)
+
   invisible(lapply(tracks, function(tr) {
     logger.info(paste("Plotting speed histogram of track", tr))
     d <- dataPlot[dataPlot$track == tr, ]
